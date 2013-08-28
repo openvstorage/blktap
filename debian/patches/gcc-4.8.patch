@@ -1,0 +1,36 @@
+Description: Fix FTBFS with gcc-4.8 and -Werror and -Wsizeof-pointer-memaccess
+Author: Juhani Numminen <juhaninumminen0@gmail.com>
+Bug-Debian: http://bugs.debian.org/701248
+Last-Update: 2013-06-07
+
+--- a/drivers/tapdisk-logfile.c
++++ b/drivers/tapdisk-logfile.c
+@@ -163,7 +163,7 @@
+ {
+ 	int err;
+ 
+-	memset(log, 0, sizeof(log));
++	memset(log, 0, sizeof(*log));
+ 
+ 	tapdisk_logfile_name(log->path, sizeof(log->path), dir, ident, ext);
+ 
+--- a/drivers/block-llcache.c
++++ b/drivers/block-llcache.c
+@@ -253,7 +253,7 @@
+ 		return;
+ 	}
+ 
+-	memset(req, 0, sizeof(req));
++	memset(req, 0, sizeof(*req));
+ 
+ 	req->treq     = treq;
+ 
+@@ -553,7 +553,7 @@
+ 		return;
+ 	}
+ 
+-	memset(req, 0, sizeof(req));
++	memset(req, 0, sizeof(*req));
+ 
+ 	req->treq       = treq;
+ 	req->pending    = treq.secs;
