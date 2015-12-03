@@ -1,3 +1,9 @@
+blktap (2.0.90-2ubuntu2) unstable; urgency=medium
+
+  * Open vStorage support.
+
+ -- Chrysostomos Nanakos <cnanakos@openvstorage.com>  Wed, 02 Dec 2015 13:11:49 +0200
+
 blktap (2.0.90-2ubuntu1) saucy; urgency=low
 
   * Merge from Debian unstable.  Remaining changes:

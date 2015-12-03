@@ -29,28 +29,29 @@
 #ifndef __DISKTYPES_H__
 #define __DISKTYPES_H__
 
-#define DISK_TYPE_AIO         0
-#define DISK_TYPE_SYNC        1
-#define DISK_TYPE_VMDK        2
-#define DISK_TYPE_VHDSYNC     3
-#define DISK_TYPE_VHD         4
-#define DISK_TYPE_RAM         5
-#define DISK_TYPE_QCOW        6
-#define DISK_TYPE_BLOCK_CACHE 7
-#define DISK_TYPE_VINDEX      8
-#define DISK_TYPE_LOG         9
-#define DISK_TYPE_REMUS       10
-#define DISK_TYPE_LCACHE      11
-#define DISK_TYPE_LLECACHE    12
-#define DISK_TYPE_LLPCACHE    13
-#define DISK_TYPE_VALVE       14
+#define DISK_TYPE_AIO          0
+#define DISK_TYPE_SYNC         1
+#define DISK_TYPE_VMDK         2
+#define DISK_TYPE_VHDSYNC      3
+#define DISK_TYPE_VHD          4
+#define DISK_TYPE_RAM          5
+#define DISK_TYPE_QCOW         6
+#define DISK_TYPE_BLOCK_CACHE  7
+#define DISK_TYPE_VINDEX       8
+#define DISK_TYPE_LOG          9
+#define DISK_TYPE_REMUS        10
+#define DISK_TYPE_LCACHE       11
+#define DISK_TYPE_LLECACHE     12
+#define DISK_TYPE_LLPCACHE     13
+#define DISK_TYPE_VALVE        14
+#define DISK_TYPE_OPENVSTORAGE 15
 
 #define DISK_TYPE_NAME_MAX    32
 
 typedef struct disk_info {
 	const char     *name; /* driver name, e.g. 'aio' */
 	char           *desc;  /* e.g. "raw image" */
-	unsigned int    flags; 
+	unsigned int    flags;
 } disk_info_t;
 
 extern const disk_info_t     *tapdisk_disk_types[];

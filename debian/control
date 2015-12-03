@@ -10,10 +10,12 @@ Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-xen/blktap.git
 Vcs-Git: http://anonscm.debian.org/git/pkg-xen/blktap.git
 Homepage: http://www.xen.org/products/cloudxen.html
 
-Package: blktap-dev
+Package: blktap-openvstorage-dev
 Section: devel
 Architecture: linux-any
-Depends: ${misc:Depends}, ${shlibs:Depends}, libvhd0 (= ${binary:Version}), libvhdio-2.0.90 (= ${binary:Version}), libblktapctl0 (= ${binary:Version})
+Conflicts: blktap-dev
+Replaces: blktap-dev
+Depends: ${misc:Depends}, ${shlibs:Depends}, libvhd0-openvstorage (= ${binary:Version}), libvhdio-2.0.90-openvstorage (= ${binary:Version}), libblktapctl0-openvstorage (= ${binary:Version})
 Description: Xen API blktap shared library (development files)
  The Xen Cloud Platform (XCP) is an open source enterprise-ready server
  virtualization and cloud computing platform, delivering the Xen Hypervisor
@@ -36,10 +38,12 @@ Description: Xen API blktap shared library (development files)
  .
  This package contains the development files
 
-Package: blktap-utils
+Package: blktap-openvstorage-utils
 Section: utils
+Conflicts: blktap-utils
+Replaces: blktap-utils
 Architecture: linux-any
-Depends: ${misc:Depends}, ${shlibs:Depends}, libvhd0 (= ${binary:Version}), libvhdio-2.0.90 (= ${binary:Version}), libblktapctl0 (= ${binary:Version}), blktap-dkms
+Depends: ${misc:Depends}, ${shlibs:Depends}, libvhd0-openvstorage (= ${binary:Version}), libvhdio-2.0.90-openvstorage (= ${binary:Version}), libblktapctl0-openvstorage (= ${binary:Version}), blktap-dkms
 Description: utilities to work with VHD disk images files
  The Xen Cloud Platform (XCP) is an open source enterprise-ready server
  virtualization and cloud computing platform, delivering the Xen Hypervisor
@@ -61,8 +65,10 @@ Description: utilities to work with VHD disk images files
  needed to create destroy and manipulate devices ('tap-ctl'), the 'tapdisk'
  driver program to perform tap devices I/O, and a number of image drivers.
 
-Package: libvhd0
+Package: libvhd0-openvstorage
 Architecture: linux-any
+Conflicts: libvhd0
+Replaces: libvhd0
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: VHD file format access library
  The Xen Cloud Platform (XCP) is an open source enterprise-ready server
@@ -86,8 +92,10 @@ Description: VHD file format access library
  .
  This package contains the runtime vhd library.
 
-Package: libvhdio-2.0.90
+Package: libvhdio-2.0.90-openvstorage
 Architecture: linux-any
+Conflicts: libvhdio-2.0.90
+Replaces: libvhdio-2.0.90
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: Xen API blktap shared library (shared library)
  The Xen Cloud Platform (XCP) is an open source enterprise-ready server
@@ -107,8 +115,10 @@ Description: Xen API blktap shared library (shared library)
  .
  This package contains the runtime vhdio library.
 
-Package: libblktapctl0
+Package: libblktapctl0-openvstorage
 Architecture: linux-any
+Conflicts: libblktapctl0
+Replaces: libblktapctl0
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: Xen API blktapctl shared library (shared library)
  The Xen Cloud Platform (XCP) is an open source enterprise-ready server
