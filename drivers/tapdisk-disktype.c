@@ -127,6 +127,12 @@ static const disk_info_t valve_disk = {
        DISK_TYPE_FILTER,
 };
 
+static const disk_info_t openvstorage_disk = {
+    "openvstorage",
+    "OpenvStorage volume image",
+    0,
+};
+
 const disk_info_t *tapdisk_disk_types[] = {
 	[DISK_TYPE_AIO]	= &aio_disk,
 	[DISK_TYPE_SYNC]	= &sync_disk,
@@ -143,6 +149,7 @@ const disk_info_t *tapdisk_disk_types[] = {
 	[DISK_TYPE_VALVE]       = &valve_disk,
 	[DISK_TYPE_LLPCACHE]    = &llpcache_disk,
 	[DISK_TYPE_LLECACHE]    = &llecache_disk,
+	[DISK_TYPE_OPENVSTORAGE]    = &openvstorage_disk,
 	0,
 };
 
@@ -167,6 +174,8 @@ extern struct tap_disk tapdisk_llpcache;
 extern struct tap_disk tapdisk_llecache;
 extern struct tap_disk tapdisk_valve;
 
+extern struct tap_disk tapdisk_openvstorage;
+
 const struct tap_disk *tapdisk_disk_drivers[] = {
 	[DISK_TYPE_AIO]         = &tapdisk_aio,
 #if 0
@@ -188,6 +197,7 @@ const struct tap_disk *tapdisk_disk_drivers[] = {
 	[DISK_TYPE_LLPCACHE]    = &tapdisk_llpcache,
 	[DISK_TYPE_LLECACHE]    = &tapdisk_llecache,
 	[DISK_TYPE_VALVE]       = &tapdisk_valve,
+	[DISK_TYPE_OPENVSTORAGE] = &tapdisk_openvstorage,
 	0,
 };
 
