@@ -52,7 +52,7 @@ AM_CONDITIONAL([ENABLE_PART],
 AM_CONDITIONAL([ENABLE_VHDIO],
 	       [test x$enable_shared = xyes &&
 	       	case "${host_os}" in
-		      linux-gnu) true ;;
+		      linux-gnu*) true ;;
 		      *) false ;;
 		esac])
 
