@@ -1,0 +1,10 @@
+#!/bin/bash
+VAR=${2}
+MAJOR=` echo $VAR | cut -f 1 -d "-" `
+VAR=${VAR##$MAJOR"-"}
+MINOR=` echo $VAR | cut -f 1 -d "." `
+kver=$MAJOR-$MINOR.*
+find $3 -name '*.ko' | sed 's|^.*/\([^/]*\)\.ko$|\1|' | sort -u | \
+while read -r module; do
+	echo "override $module $kver weak-updates/$1"
+done
