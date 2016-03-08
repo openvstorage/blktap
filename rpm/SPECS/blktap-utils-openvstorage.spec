@@ -1,11 +1,11 @@
-Name: blktap-utils
+Name: blktap-utils-openvstorage
 Summary: blktap user space utilities
 Version: 2.0.90
 Release: 2.2
 License: BSD and LGPLv2+
 Group: System Environment/Libraries
 URL: http://xen.org
-Source0: blktap-utils-2.0.90.tar.gz
+Source0: blktap-utils-openvstorage-2.0.90.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 BuildRequires: e2fsprogs-devel, volumedriver-dev
 BuildRequires: libuuid-devel, libaio-devel
@@ -22,7 +22,7 @@ Group: Development/Libraries
 This package contains the blktap development libraries and header files.
 
 %prep
-%setup -qn blktap-utils-2.0.90
+%setup -qn blktap ##blktap-utils-2.0.90
 
 ./autogen.sh
 
