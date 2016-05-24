@@ -1,30 +1,20 @@
 /*
- * Copyright (c) 2015, iNuron NV. All rights reserved.
+ * Copyright (c) 2015-2016, iNuron NV. All rights reserved.
  *
  * Author: Chrysostomos Nanakos <cnanakos@openvstorage.com>
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of XenSource Inc. nor the names of its contributors
- *       may be used to endorse or promote products derived from this software
- *       without specific prior written permission.
+ * This file is part of Open vStorage Open Source Edition (OSE),
+ * as available from
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
- * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *      http://www.openvstorage.org and
+ *      http://www.openvstorage.com.
+ *
+ * This file is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Affero General Public License v3 (GNU AGPLv3)
+ * as published by the Free Software Foundation, in version 3 as it comes in
+ * the LICENSE.txt file of the Open vStorage OSE distribution.
+ * Open vStorage is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY of any kind.
  */
 #include <errno.h>
 #include <stdio.h>
@@ -51,6 +41,7 @@
 #define MAX_OPENVSTORAGE_REQS        TAPDISK_DATA_REQUESTS
 #define MAX_OPENVSTORAGE_MERGED_REQS 32
 #define MAX_MERGE_SIZE               131072
+#define OVS_DFL_NETWORK_PORT         21321
 
 struct tdopenvstorage_request
 {
@@ -155,19 +146,128 @@ static void openvstorage_finish_aiocb(ovs_completion_t *completion, void *arg)
     free(aiocbp);
 }
 
-static int tdopenvstorage_open(td_driver_t *driver,
-                               const char* filename,
-                               td_flag_t flags)
+static int tdopenvstorage_parse_filename_opts(const char *filename,
+                                              char **host,
+                                              int *port,
+                                              char **volume_name)
+{
+    char *endptr, *inetaddr, *h;
+    char *tokens[2], *ptoken, *ds;
+
+    if (!filename)
+    {
+        DPRINTF("%s: invalid argument\n", __func__);
+        return -1;
+    }
+    ds = strdup(filename);
+    tokens[0] = strsep(&ds, "/");
+    tokens[1] = strsep(&ds, "\0");
+
+
+    if ((tokens[0] && !strlen(tokens[0])) ||
+        (tokens[1] && !strlen(tokens[1])))
+    {
+        DPRINTF("%s: server and volume name must be specified", __func__);
+        free(ds);
+        return -1;
+    }
+
+    *volume_name = strdup(tokens[1]);
+    if (!index(tokens[0], ':'))
+    {
+        *port = OVS_DFL_NETWORK_PORT;
+        *host = strdup(tokens[0]);
+    }
+    else
+    {
+        inetaddr = strdup(tokens[0]);
+        h = strtok(inetaddr, ":");
+        if (h)
+        {
+            *host = strdup(h);
+        }
+        ptoken = strtok(NULL, "\0");
+        if (ptoken != NULL)
+        {
+            int p = strtoul(ptoken, &endptr, 10);
+            if (strlen(endptr))
+            {
+                DPRINTF("%s: server/port must be specified\n", __func__);
+                free(inetaddr);
+                free(ds);
+                return -1;
+            }
+            *port = p;
+        }
+        else
+        {
+            DPRINTF("%s: server/port must be specified\n", __func__);
+            free(inetaddr);
+            free(ds);
+            return -1;
+        }
+        free(inetaddr);
+        free(ds);
+    }
+    return 0;
+}
+
+static int td_openvstorage_open_helper(td_driver_t *driver,
+                                       const char* filename,
+                                       td_flag_t flags,
+                                       const char* transport,
+                                       bool is_network)
 {
     int r = 0, i;
+    char *host = NULL;
+    char *volume_name = NULL;
+    int port = 0;
     struct tdopenvstorage_data *prv = driver->data;
     memset(prv, 0x00, sizeof(struct tdopenvstorage_data));
 
-    prv->ctx = ovs_ctx_init(filename, O_RDWR);
+    if (is_network)
+    {
+        r = tdopenvstorage_parse_filename_opts(filename,
+                                               &host,
+                                               &port,
+                                               &volume_name);
+        if (r < 0)
+        {
+            return -EINVAL;
+        }
+    }
+
+    ovs_ctx_attr_t *ctx_attr = ovs_ctx_attr_new();
+    assert(ctx_attr != NULL);
+
+    if (ovs_ctx_attr_set_transport(ctx_attr,
+                                   transport,
+                                   host,
+                                   port) < 0) {
+        r = -errno;
+        DPRINTF("%s: cannot set transport type: %s\n",
+                __func__,
+                strerror(errno));
+        ovs_ctx_attr_destroy(ctx_attr);
+        return r;
+    }
+
+    prv->ctx = ovs_ctx_new(ctx_attr);
+    ovs_ctx_attr_destroy(ctx_attr);
     if (prv->ctx == NULL)
     {
         r = -errno;
-        DPRINTF("%s: failed to create Open vStorage context\n", __func__);
+        DPRINTF("%s: failed to create context: %s\n",
+                __func__,
+                strerror(errno));
+        return r;
+    }
+    r = ovs_ctx_init(prv->ctx, is_network ? volume_name : filename, O_RDWR);
+    if (r < 0)
+    {
+        r = -errno;
+        DPRINTF("%s: cannot open volume: %s\n", __func__, strerror(errno));
+        ovs_ctx_destroy(prv->ctx);
         return r;
     }
 
@@ -220,6 +320,27 @@ err_exit:
     return r;
 }
 
+static int tdopenvstorage_open_shm(td_driver_t *driver,
+                                   const char* filename,
+                                   td_flag_t flags)
+{
+    return td_openvstorage_open_helper(driver, filename, flags, "shm", false);
+}
+
+static int tdopenvstorage_open_tcp(td_driver_t *driver,
+                                   const char* filename,
+                                   td_flag_t flags)
+{
+    return td_openvstorage_open_helper(driver, filename, flags, "tcp", true);
+}
+
+static int tdopenvstorage_open_rdma(td_driver_t *driver,
+                                   const char* filename,
+                                   td_flag_t flags)
+{
+    return td_openvstorage_open_helper(driver, filename, flags, "rdma", true);
+}
+
 static int tdopenvstorage_close(td_driver_t *driver)
 {
     struct tdopenvstorage_data *prv = driver->data;
@@ -239,7 +360,7 @@ static int tdopenvstorage_close(td_driver_t *driver)
     r = ovs_ctx_destroy(prv->ctx);
     if (r < 0)
     {
-        DPRINTF("%s: cannot destroy Open vStorage context\n", __func__);
+        DPRINTF("%s: cannot destroy context\n", __func__);
     }
     return r;
 }
@@ -532,11 +653,39 @@ static void tdopenvstorage_stats(td_driver_t *driver, td_stats_t *st)
     tapdisk_stats_field(st, "max_merge_size", "d", MAX_MERGE_SIZE);
 }
 
-struct tap_disk tapdisk_openvstorage = {
+struct tap_disk tapdisk_openvstorage_shm = {
     .disk_type = "tapdisk_openvstorage",
     .private_data_size = sizeof(struct tdopenvstorage_data),
     .flags = 0,
-    .td_open = tdopenvstorage_open,
+    .td_open = tdopenvstorage_open_shm,
+    .td_close= tdopenvstorage_close,
+    .td_queue_read = tdopenvstorage_queue_request,
+    .td_queue_write = tdopenvstorage_queue_request,
+    .td_get_parent_id = tdopenvstorage_get_parent_id,
+    .td_validate_parent = tdopenvstorage_validate_parent,
+    .td_debug = NULL,
+    .td_stats = tdopenvstorage_stats,
+};
+
+struct tap_disk tapdisk_openvstorage_tcp = {
+    .disk_type = "tapdisk_openvstorage",
+    .private_data_size = sizeof(struct tdopenvstorage_data),
+    .flags = 0,
+    .td_open = tdopenvstorage_open_tcp,
+    .td_close= tdopenvstorage_close,
+    .td_queue_read = tdopenvstorage_queue_request,
+    .td_queue_write = tdopenvstorage_queue_request,
+    .td_get_parent_id = tdopenvstorage_get_parent_id,
+    .td_validate_parent = tdopenvstorage_validate_parent,
+    .td_debug = NULL,
+    .td_stats = tdopenvstorage_stats,
+};
+
+struct tap_disk tapdisk_openvstorage_rdma = {
+    .disk_type = "tapdisk_openvstorage",
+    .private_data_size = sizeof(struct tdopenvstorage_data),
+    .flags = 0,
+    .td_open = tdopenvstorage_open_rdma,
     .td_close= tdopenvstorage_close,
     .td_queue_read = tdopenvstorage_queue_request,
     .td_queue_write = tdopenvstorage_queue_request,

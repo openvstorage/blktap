@@ -127,8 +127,20 @@ static const disk_info_t valve_disk = {
        DISK_TYPE_FILTER,
 };
 
-static const disk_info_t openvstorage_disk = {
+static const disk_info_t openvstorage_disk_shm = {
     "openvstorage",
+    "OpenvStorage volume image",
+    0,
+};
+
+static const disk_info_t openvstorage_disk_tcp = {
+    "openvstorage+tcp",
+    "OpenvStorage volume image",
+    0,
+};
+
+static const disk_info_t openvstorage_disk_rdma = {
+    "openvstorage+rdma",
     "OpenvStorage volume image",
     0,
 };
@@ -149,7 +161,9 @@ const disk_info_t *tapdisk_disk_types[] = {
 	[DISK_TYPE_VALVE]       = &valve_disk,
 	[DISK_TYPE_LLPCACHE]    = &llpcache_disk,
 	[DISK_TYPE_LLECACHE]    = &llecache_disk,
-	[DISK_TYPE_OPENVSTORAGE]    = &openvstorage_disk,
+	[DISK_TYPE_OPENVSTORAGE]    = &openvstorage_disk_shm,
+	[DISK_TYPE_OPENVSTORAGE_TCP]    = &openvstorage_disk_tcp,
+	[DISK_TYPE_OPENVSTORAGE_RDMA]    = &openvstorage_disk_rdma,
 	0,
 };
 
@@ -174,7 +188,9 @@ extern struct tap_disk tapdisk_llpcache;
 extern struct tap_disk tapdisk_llecache;
 extern struct tap_disk tapdisk_valve;
 
-extern struct tap_disk tapdisk_openvstorage;
+extern struct tap_disk tapdisk_openvstorage_shm;
+extern struct tap_disk tapdisk_openvstorage_tcp;
+extern struct tap_disk tapdisk_openvstorage_rdma;
 
 const struct tap_disk *tapdisk_disk_drivers[] = {
 	[DISK_TYPE_AIO]         = &tapdisk_aio,
@@ -197,7 +213,9 @@ const struct tap_disk *tapdisk_disk_drivers[] = {
 	[DISK_TYPE_LLPCACHE]    = &tapdisk_llpcache,
 	[DISK_TYPE_LLECACHE]    = &tapdisk_llecache,
 	[DISK_TYPE_VALVE]       = &tapdisk_valve,
-	[DISK_TYPE_OPENVSTORAGE] = &tapdisk_openvstorage,
+	[DISK_TYPE_OPENVSTORAGE] = &tapdisk_openvstorage_shm,
+	[DISK_TYPE_OPENVSTORAGE_TCP] = &tapdisk_openvstorage_tcp,
+	[DISK_TYPE_OPENVSTORAGE_RDMA] = &tapdisk_openvstorage_rdma,
 	0,
 };
 
