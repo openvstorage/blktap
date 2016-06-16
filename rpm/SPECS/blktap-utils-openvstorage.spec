@@ -7,7 +7,7 @@ Group: System Environment/Libraries
 URL: http://xen.org
 Source0: blktap-utils-openvstorage-2.0.90.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
-BuildRequires: e2fsprogs-devel, volumedriver-dev
+BuildRequires: e2fsprogs-devel, libovsvolumedriver-devel
 BuildRequires: libuuid-devel, libaio-devel
 BuildRequires: automake, autoconf, libtool
 %description

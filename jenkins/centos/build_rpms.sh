@@ -14,12 +14,12 @@ gpgcheck=0' | sudo tee /etc/yum.repos.d/openvstorage.repo
 
 ## if jenkins copied in volumedriver packages install them,
 ## else use the packages from the openvstorage repo
-P=$(ls -d volumedriver-*.rpm 2>/dev/null || true)
+P=$(ls -d libovsvolumedriver*.rpm 2>/dev/null || true)
 if [ -n "$P" ]
 then
-  sudo yum install -y volumedriver-*.rpm
+  sudo yum install -y libovsvolumedriver*.rpm
 else
-  sudo yum install -y volumedriver-dev
+  sudo yum install -y libovsvolumedriver-devel
 fi
 
 ## prepare the build env
