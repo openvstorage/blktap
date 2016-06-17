@@ -1,3 +1,9 @@
+blktap (2.0.90-2ubuntu3) unstable; urgency=medium
+
+  * Update to use libovsvolumedriver 6.0.0
+
+ -- Arne Redlich <arne.redlich@openvstorage.com>  Fri, 17 Jun 2016 10:29:57 +0200
+
 blktap (2.0.90-2ubuntu2) unstable; urgency=medium
 
   * Open vStorage support.
