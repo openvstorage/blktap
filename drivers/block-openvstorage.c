@@ -42,6 +42,7 @@
 #define MAX_OPENVSTORAGE_MERGED_REQS 32
 #define MAX_MERGE_SIZE               131072
 #define OVS_DFL_NETWORK_PORT         21321
+#define OVS_OPT_ENABLE_HA            "enable-ha"
 
 struct tdopenvstorage_request
 {
@@ -89,6 +90,26 @@ struct tdopenvstorage_data
 
 static int tdopenvstorage_close(td_driver_t* driver);
 static void tdopenvstorage_pipe_read_cb(event_id_t eb, char mode, void* data);
+
+static int strstart(const char *str, const char *val, const char **ptr)
+{
+    const char *p, *q;
+    p = str;
+    q = val;
+    while (*q != '\0') {
+        if (*p != *q)
+        {
+            return 0;
+        }
+        p++;
+        q++;
+    }
+    if (ptr)
+    {
+        *ptr = p;
+    }
+    return 1;
+}
 
 static int get_volume_info(struct tdopenvstorage_data *td)
 {
@@ -149,10 +170,12 @@ static void openvstorage_finish_aiocb(ovs_completion_t *completion, void *arg)
 static int tdopenvstorage_parse_filename_opts(const char *filename,
                                               char **host,
                                               int *port,
-                                              char **volume_name)
+                                              char **volume_name,
+                                              int *enable_ha)
 {
+    const char *a;
     char *endptr, *inetaddr, *h;
-    char *tokens[2], *ptoken, *ds;
+    char *tokens[3], *ptoken, *ds;
 
     if (!filename)
     {
@@ -161,7 +184,8 @@ static int tdopenvstorage_parse_filename_opts(const char *filename,
     }
     ds = strdup(filename);
     tokens[0] = strsep(&ds, "/");
-    tokens[1] = strsep(&ds, "\0");
+    tokens[1] = strsep(&ds, ",");
+    tokens[2] = strsep(&ds, "\0");
 
 
     if ((tokens[0] && !strlen(tokens[0])) ||
@@ -209,6 +233,19 @@ static int tdopenvstorage_parse_filename_opts(const char *filename,
         free(inetaddr);
         free(ds);
     }
+
+    if (tokens[2] != NULL && strstart(tokens[2], OVS_OPT_ENABLE_HA"=", &a))
+    {
+        if (strlen(a) > 0) {
+            if (!strcmp(a, "on")) {
+                *enable_ha = 1;
+            } else if(!strcmp(a, "off")) {
+                *enable_ha = 0;
+            }
+        } else {
+            *enable_ha = 1;
+        }
+    }
     return 0;
 }
 
@@ -222,6 +259,7 @@ static int td_openvstorage_open_helper(td_driver_t *driver,
     char *host = NULL;
     char *volume_name = NULL;
     int port = 0;
+    int enable_ha = 1;
     struct tdopenvstorage_data *prv = driver->data;
     memset(prv, 0x00, sizeof(struct tdopenvstorage_data));
 
@@ -230,7 +268,8 @@ static int td_openvstorage_open_helper(td_driver_t *driver,
         r = tdopenvstorage_parse_filename_opts(filename,
                                                &host,
                                                &port,
-                                               &volume_name);
+                                               &volume_name,
+                                               &enable_ha);
         if (r < 0)
         {
             return -EINVAL;
@@ -250,6 +289,18 @@ static int td_openvstorage_open_helper(td_driver_t *driver,
                 strerror(errno));
         ovs_ctx_attr_destroy(ctx_attr);
         return r;
+    }
+
+    if (enable_ha)
+    {
+        if (ovs_ctx_attr_enable_ha(ctx_attr) < 0) {
+            r = -errno;
+            DPRINTF("%s: cannot enable high availability: %s\n",
+                    __func__,
+                    strerror(errno));
+            ovs_ctx_attr_destroy(ctx_attr);
+            return r;
+        }
     }
 
     prv->ctx = ovs_ctx_new(ctx_attr);
