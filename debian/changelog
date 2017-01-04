@@ -1,3 +1,9 @@
+blktap (2.0.90-2ubuntu5) unstable; urgency=medium
+
+  * Compile against the latest libovsvolumedriver version.
+
+ -- Chrysostomos Nanakos <cnanakos@openvstorage.com>  Wed, 04 Jan 2017 10:11:49 +0200
+
 blktap (2.0.90-2ubuntu4) unstable; urgency=medium
 
   * Enable HA by default
