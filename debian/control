@@ -4,7 +4,7 @@ Priority: extra
 Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 XSBC-Original-Maintainer: PKG Xen Devel <pkg-xen-devel@lists.alioth.debian.org>
 Uploaders: Thomas Goirand <zigo@debian.org>
-Build-Depends: debhelper (>= 9), autotools-dev, uuid-dev, libaio-dev, libtool, autoconf, automake, libovsvolumedriver-dev (>= 6.7.0)
+Build-Depends: debhelper (>= 9), autotools-dev, uuid-dev, libaio-dev, libtool, autoconf, automake, libovsvolumedriver-dev
 Standards-Version: 3.9.4
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-xen/blktap.git
 Vcs-Git: http://anonscm.debian.org/git/pkg-xen/blktap.git
@@ -15,7 +15,7 @@ Section: devel
 Architecture: linux-any
 Conflicts: blktap-dev
 Replaces: blktap-dev
-Depends: ${misc:Depends}, ${shlibs:Depends}, libvhd0-openvstorage (= ${binary:Version}), libvhdio-2.0.90-openvstorage (= ${binary:Version}), libblktapctl0-openvstorage (= ${binary:Version}), libovsvolumedriver (>= 6.7.0)
+Depends: ${misc:Depends}, ${shlibs:Depends}, libvhd0-openvstorage (= ${binary:Version}), libvhdio-2.0.90-openvstorage (= ${binary:Version}), libblktapctl0-openvstorage (= ${binary:Version}), libovsvolumedriver
 Description: Xen API blktap shared library (development files)
  The Xen Cloud Platform (XCP) is an open source enterprise-ready server
  virtualization and cloud computing platform, delivering the Xen Hypervisor
