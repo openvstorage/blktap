@@ -1,3 +1,10 @@
+blktap (2.0.90-2ubuntu6) unstable; urgency=medium
+
+  * Remove libovsvolumedriver package versioning check,
+    use the virtual package name instead.
+
+ -- Chrysostomos Nanakos <cnanakos@openvstorage.com>  Mon, 20 Mar 2017 10:11:49 +0200
+
 blktap (2.0.90-2ubuntu5) unstable; urgency=medium
 
   * Compile against the latest libovsvolumedriver version.
